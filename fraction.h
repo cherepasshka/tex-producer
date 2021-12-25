@@ -1,3 +1,5 @@
+#pragma once
+
 #include <cstdint>
 #include <iomanip>
 
@@ -27,7 +29,7 @@ public:
         denominator = den;
     }
     Fraction operator+(const Fraction& other) const {
-        return Fraction(numerator * other.denominator + other.denominator * numerator,
+        return Fraction(numerator * other.denominator + denominator * other.numerator,
                         denominator * other.denominator)
             .Validate();
     }
@@ -43,7 +45,12 @@ public:
     Fraction operator/(const Fraction& other) const {
         return Fraction(numerator * other.denominator, denominator * other.numerator).Validate();
     }
-
+    bool operator==(const Fraction& other) const {
+        return numerator * other.denominator == denominator * other.numerator;
+    }
+    bool operator!=(const Fraction& other) const {
+        return numerator * other.denominator != denominator * other.numerator;
+    }
     // template<class T>
     friend std::ostream& operator<<(std::ostream& out, const Fraction& fraction);
 };
