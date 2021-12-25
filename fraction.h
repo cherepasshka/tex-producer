@@ -38,7 +38,7 @@ public:
             .Validate();
     }
     Fraction operator-() const {
-        return Fraction(-numerator, denominator);
+        return Fraction(-numerator, denominator).Validate();
     }
     Fraction operator-(const Fraction& other) const {
         return *this + (-other);
@@ -54,6 +54,12 @@ public:
     }
     bool operator!=(const Fraction& other) const {
         return numerator * other.denominator != denominator * other.numerator;
+    }
+    bool operator<(const Fraction& other) const {
+        return numerator * other.denominator < other.numerator * denominator;
+    }
+    bool operator>(const Fraction& other) const {
+        return numerator * other.denominator > other.numerator * denominator;
     }
     std::string ToStr() const {
         if (denominator == 1 || numerator == 0) {
