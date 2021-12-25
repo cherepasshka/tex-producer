@@ -1,8 +1,9 @@
 #pragma once
 
 #include <iostream>
-#include "fraction.h"
 #include <vector>
+
+#include "fraction.h"
 
 using Matrix = std::vector<std::vector<Fraction<int64_t>>>;
 class LatexPinter {

@@ -1,11 +1,12 @@
 #pragma once
 
+#include <algorithm>
+#include <cmath>
+#include <iostream>
+#include <vector>
+
 #include "fraction.h"
 #include "latex_printer.h"
-#include <algorithm>
-#include <iostream>
-#include <cmath>
-#include <vector>
 
 using Matrix = std::vector<std::vector<Fraction<int64_t>>>;
 using Column = std::vector<Fraction<int64_t>>;
