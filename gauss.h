@@ -12,23 +12,23 @@ using Matrix = std::vector<std::vector<Fraction<int64_t>>>;
 using Column = std::vector<Fraction<int64_t>>;
 
 void SwapRows(Matrix& m, size_t i1, size_t i2) {
-    for (int i = 0; i < m[0].size(); ++i) {
+    for (size_t i = 0; i < m[0].size(); ++i) {
         std::swap(m[i1][i], m[i2][i]);
     }
 }
 void MultiplyRow(Matrix& m, size_t j, const Fraction<int64_t>& alpha) {
-    for (int i = 0; i < m[0].size(); ++i) {
+    for (size_t i = 0; i < m[0].size(); ++i) {
         m[j][i] = m[j][i] * alpha;
     }
 }
 void SubstractRows(Matrix& m, size_t i1, size_t i2, const Fraction<int64_t>& alpha) {
-    for (int i = 0; i < m[0].size(); ++i) {
+    for (size_t i = 0; i < m[0].size(); ++i) {
         m[i1][i] = m[i1][i] - alpha * m[i2][i];
     }
 }
-int GetNonZeroRow(const Matrix& m, int start, int column) {
-    int row = m.size();
-    for (int i = start; i < m.size(); ++i) {
+size_t GetNonZeroRow(const Matrix& m, int start, int column) {
+    size_t row = m.size();
+    for (size_t i = start; i < m.size(); ++i) {
         if (m[i][column] != 0) {
             row = i;
             break;
@@ -39,9 +39,9 @@ int GetNonZeroRow(const Matrix& m, int start, int column) {
 void ToSteppedView(std::ostream& out, Matrix& m /*, const Column& b*/) {
     LatexPinter printer(out);
     int variable_position = 0;
-    int non_zero = m.size();
+    size_t non_zero = m.size();
     Fraction<int64_t> alpha = 0;
-    for (int i = 0; i < m[0].size(); ++i) {
+    for (size_t i = 0; i < m[0].size(); ++i) {
         non_zero = GetNonZeroRow(m, variable_position, i);
         if (non_zero == m.size()) {
             ++variable_position;
@@ -54,7 +54,7 @@ void ToSteppedView(std::ostream& out, Matrix& m /*, const Column& b*/) {
         }
 
         ++variable_position;
-        for (int j = variable_position; j < m.size(); ++j) {
+        for (size_t j = variable_position; j < m.size(); ++j) {
             if (m[j][i] == 0) {
                 continue;
             }

@@ -7,8 +7,8 @@
 #include "fraction.h"
 
 using Matrix = std::vector<std::vector<Fraction<int64_t>>>;
-std::string Romanian(int num) {
-    if(num == 1) {
+std::string Romanian(size_t num) {
+    if (num == 1) {
         return "\\mathbb{I} ";
     } else if (num == 2) {
         return "\\mathbb{II} ";
@@ -22,19 +22,21 @@ std::string Romanian(int num) {
         return "\\mathbb{VI} ";
     } else if (num == 7) {
         return "\\mathbb{VII} ";
-    }else if (num == 8) {
+    } else if (num == 8) {
         return "\\mathbb{VIII} ";
     }
 
     throw std::runtime_error("Wow.... you have more than 8 rows in your matrix....");
 }
-std::string TransformationSub(int row1, int row2, const Fraction<int64_t>& alpha) {
+std::string TransformationSub(size_t row1, size_t row2, const Fraction<int64_t>& alpha) {
     return Romanian(row1 + 1) + " - " + alpha.ToStr() + Romanian(row2 + 1);
 }
-std::string TransformationSwap(int row1, int row2) {
+std::string TransformationSwap(size_t row1, size_t row2) {
     return "\\text{swap}(" + Romanian(row1 + 1) + ", " + Romanian(row2 + 1) + ")";
 }
-
+std::string TransformationMul(size_t row, const Fraction<int64_t>& alpha) {
+    return Romanian(row + 1) + "\\cdot" + alpha.ToStr();
+}
 class LatexPinter {
 private:
     int matricies_in_block;
@@ -106,8 +108,8 @@ public:
             out << package << "\n";
         }
         out << "\n";
-        out << "\\author{Полуденный кек} \n";
-        out << "\\title{Идентифицирую себя как сгоревшую спичку} \n";
+        out << "\\author{Author here} \n";
+        out << "\\title{Some title} \n";
         out << "\\date{\\today} \n";
         out << "\\begin{document} \n";
         out << "\\maketitle \n\n";
