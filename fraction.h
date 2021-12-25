@@ -20,6 +20,10 @@ private:
         FractionType gcd = Gcd(numerator, denominator);
         numerator /= gcd;
         denominator /= gcd;
+        if(denominator < 0) {
+            denominator *= -1;
+            numerator *= -1;
+        }
         return *this;
     }
 
