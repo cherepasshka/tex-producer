@@ -1,3 +1,8 @@
-This repository contains the program that prodeces LaTex code for:
+# Latex printer for matrix or linear envelope operations
+#### Content:
+This repository contains the program that produces LaTex code for:
 * Printing matrices
-* Transforming matrix into stepped matrix view
+* Transforming matrix into stepped matrix form
+
+#### Usage:
+===TODO===
