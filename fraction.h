@@ -1,8 +1,9 @@
 #include <cstdint>
 #include <iomanip>
 
-typedef int64_t FractionType;
+// using FractionType = int64_t ;
 
+template <class FractionType>
 class Fraction {
 private:
     FractionType numerator, denominator;
@@ -42,10 +43,16 @@ public:
     Fraction operator/(const Fraction& other) const {
         return Fraction(numerator * other.denominator, denominator * other.numerator).Validate();
     }
+
+    // template<class T>
     friend std::ostream& operator<<(std::ostream& out, const Fraction& fraction);
 };
 
-std::ostream& operator<<(std::ostream& out, const Fraction& fraction) {
-    out << fraction.numerator << "/" << fraction.denominator;
+std::ostream& operator<<(std::ostream& out, const Fraction<int64_t>& fraction) {
+    if (fraction.denominator == 1 || fraction.numerator == 0) {
+        out << fraction.numerator;
+    } else {
+        out << fraction.numerator << "/" << fraction.denominator;
+    }
     return out;
 }
