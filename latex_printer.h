@@ -28,14 +28,19 @@ std::string Romanian(size_t num) {
 
     throw std::runtime_error("Wow.... you have more than 8 rows in your matrix....");
 }
-std::string TransformationSub(size_t row1, size_t row2, const Fraction<int64_t>& alpha) {
-    return Romanian(row1 + 1) + " - " + alpha.ToStr() + Romanian(row2 + 1);
+std::string TransformationSub(size_t row1, size_t row2, Fraction<int64_t> alpha) {
+    std::string operation = " - ";
+    if (alpha < 0) {
+        alpha = -alpha;
+        operation = " + ";
+    }
+    return Romanian(row1 + 1) + operation + alpha.ToStr() + Romanian(row2 + 1);
 }
 std::string TransformationSwap(size_t row1, size_t row2) {
     return "\\text{swap}(" + Romanian(row1 + 1) + ", " + Romanian(row2 + 1) + ")";
 }
 std::string TransformationMul(size_t row, const Fraction<int64_t>& alpha) {
-    return Romanian(row + 1) + "\\cdot" + alpha.ToStr();
+    return alpha.ToStr() + "\\cdot" + Romanian(row + 1);
 }
 class LatexPinter {
 private:
@@ -54,15 +59,20 @@ public:
         OpenBlock();
     }
     ~LatexPinter() {
-        if (matricies_in_block == 0) {
-            CloseBlock();
-        }
+        CloseBlock();
         if (is_full_document) {
             AddDocumentEpilogue();
         }
     }
-    void PrintMatrix(const Matrix& m) {
-        out << "\\begin{pmatrix} \n";
+    void PrintMatrix(const Matrix& m, size_t line_ind) {
+        out << "\\left(\\begin{array}{";
+        for (size_t i = 0; i < m[0].size(); ++i) {
+            if (i == line_ind) {
+                out << "|";
+            }
+            out << "l";
+        }
+        out << "} \n";
         for (int i = 0; i < m.size(); ++i) {
             out << "\t";
             for (int j = 0; j < m[i].size(); ++j) {
@@ -75,7 +85,7 @@ public:
             }
             out << "\n";
         }
-        out << "\\end{pmatrix} \n";
+        out << "\\end{array}\\right) \n";
         ++matricies_in_block;
         if (matricies_in_block == MAX_MATRICIES_IN_BLOCK) {
             matricies_in_block = 0;
