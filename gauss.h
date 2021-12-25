@@ -36,32 +36,47 @@ size_t GetNonZeroRow(const Matrix& m, int start, int column) {
     }
     return row;
 }
-void ToSteppedView(std::ostream& out, Matrix& m /*, const Column& b*/) {
+void ToSteppedView(std::ostream& out, Matrix& m, size_t variable_columns, bool improved = false) {
     LatexPinter printer(out);
     int variable_position = 0;
     size_t non_zero = m.size();
+    size_t matrix_columns = m[0].size() - variable_columns;
     Fraction<int64_t> alpha = 0;
-    for (size_t i = 0; i < m[0].size(); ++i) {
+    printer.PrintMatrix(m, matrix_columns);
+    for (size_t i = 0; i < matrix_columns; ++i) {
         non_zero = GetNonZeroRow(m, variable_position, i);
         if (non_zero == m.size()) {
             ++variable_position;
             continue;
         }
-        SwapRows(m, non_zero, variable_position);
         if (non_zero != variable_position) {
+            SwapRows(m, non_zero, variable_position);
             printer.PrintTransformation(TransformationSwap(non_zero, variable_position));
-            printer.PrintMatrix(m);
+            printer.PrintMatrix(m, m[0].size() - variable_columns);
         }
-
+        alpha = Fraction<int64_t>(1) / m[variable_position][i];
+        if (alpha != 1) {
+            MultiplyRow(m, variable_position, alpha);
+            printer.PrintTransformation(TransformationMul(variable_position, alpha));
+            printer.PrintMatrix(m, m[0].size() - variable_columns);
+        }
         ++variable_position;
-        for (size_t j = variable_position; j < m.size(); ++j) {
-            if (m[j][i] == 0) {
+        for (size_t j = improved ? 0 : variable_position; j < m.size(); ++j) {
+            if (m[j][i] == 0 || j == variable_position - 1) {
                 continue;
             }
             alpha = m[j][i] / m[variable_position - 1][i];
             SubstractRows(m, j, variable_position - 1, alpha);
             printer.PrintTransformation(TransformationSub(j, variable_position - 1, alpha));
-            printer.PrintMatrix(m);
+            printer.PrintMatrix(m, m[0].size() - variable_columns);
         }
     }
+}
+void Gaussian(std::ostream& out, const Matrix& matrix, const Column& b) {
+    Matrix m = matrix;
+    for (size_t i = 0; i < b.size(); ++i) {
+        m[i].push_back(b[i]);
+    }
+    ToSteppedView(out, m, 1, true);
+    // TODO: to add expression of main variables in terms of side
 }
