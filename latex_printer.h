@@ -43,6 +43,7 @@ public:
     void PrintMatrix(const Matrix& m) {
         out << "\\begin{pmatrix} \n";
         for (int i = 0; i < m.size(); ++i) {
+            out << "\t";
             for (int j = 0; j < m[i].size(); ++j) {
                 out << m[i][j];
                 if (j + 1 < m[i].size()) {
