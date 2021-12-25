@@ -21,15 +21,23 @@ private:
     int matricies_in_block;
     static const int MAX_MATRICIES_IN_BLOCK = 3;
     std::ostream& out;
+    bool is_full_document;
 
 public:
-    LatexPinter(std::ostream& o) : out(o) {
+    LatexPinter(std::ostream& o, bool is_full_doc = false) : out(o) {
         matricies_in_block = 0;
+        is_full_document = is_full_doc;
+        if (is_full_document) {
+            AddDocumentPrologue();
+        }
         OpenBlock();
     }
     ~LatexPinter() {
         if (matricies_in_block == 0) {
             CloseBlock();
+        }
+        if (is_full_document) {
+            AddDocumentEpilogue();
         }
     }
     void PrintMatrix(const Matrix& m) {
@@ -64,5 +72,27 @@ public:
     }
     void OpenBlock() {
         out << "$$\n";
+    }
+    void AddDocumentPrologue() {
+        out << "\\documentclass[a4paper,12pt]{article}\n\n";
+        std::vector<std::string> packages = {"\\usepackage{cmap}",
+                                             "\\usepackage[warn]{mathtext}",
+                                             "\\usepackage[T2A]{fontenc}",
+                                             "\\usepackage[utf8]{inputenc}",
+                                             "\\usepackage[english,russian]{babel}",
+                                             "\\usepackage{amsfonts}",
+                                             "\\usepackage{amsmath}"};
+        for (const auto package : packages) {
+            out << package << "\n";
+        }
+        out << "\n";
+        out << "\\author{Полуденный кек} \n";
+        out << "\\title{Идентифицирую себя как сгоревшую спичку} \n";
+        out << "\\date{\\today} \n";
+        out << "\\begin{document} \n";
+        out << "\\maketitle \n\n";
+    }
+    void AddDocumentEpilogue() {
+        out << "\\end{document} \n";
     }
 };
