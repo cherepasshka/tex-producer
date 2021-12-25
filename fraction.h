@@ -51,7 +51,13 @@ public:
     bool operator!=(const Fraction& other) const {
         return numerator * other.denominator != denominator * other.numerator;
     }
-    // template<class T>
+    std::string ToStr() const {
+        if (denominator == 1 || numerator == 0) {
+            return std::to_string(numerator);
+        } else {
+            return std::to_string(numerator) + "/" + std::to_string(denominator);
+        }
+    }
     friend std::ostream& operator<<(std::ostream& out, const Fraction& fraction);
 };
 

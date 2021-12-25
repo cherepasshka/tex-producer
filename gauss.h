@@ -38,25 +38,29 @@ int GetNonZeroRow(const Matrix& m, int start, int column) {
 }
 void ToSteppedView(std::ostream& out, Matrix& m /*, const Column& b*/) {
     LatexPinter printer(out);
-    int var_pos = 0;
-    int prints = 0;
+    int variable_position = 0;
+    int non_zero = m.size();
+    Fraction<int64_t> alpha = 0;
     for (int i = 0; i < m[0].size(); ++i) {
-        int non_zero = GetNonZeroRow(m, var_pos, i);
+        non_zero = GetNonZeroRow(m, variable_position, i);
         if (non_zero == m.size()) {
-            ++var_pos;
+            ++variable_position;
             continue;
         }
-        SwapRows(m, non_zero, var_pos);
-        printer.PrintTransformation();
-        printer.PrintMatrix(m);
+        SwapRows(m, non_zero, variable_position);
+        if (non_zero != variable_position) {
+            printer.PrintTransformation(TransformationSwap(non_zero, variable_position));
+            printer.PrintMatrix(m);
+        }
 
-        var_pos++;
-        for (int j = var_pos; j < m.size(); ++j) {
+        ++variable_position;
+        for (int j = variable_position; j < m.size(); ++j) {
             if (m[j][i] == 0) {
                 continue;
             }
-            SubstractRows(m, j, var_pos - 1, m[j][i] / m[var_pos - 1][i]);
-            printer.PrintTransformation();
+            alpha = m[j][i] / m[variable_position - 1][i];
+            SubstractRows(m, j, variable_position - 1, alpha);
+            printer.PrintTransformation(TransformationSub(j, variable_position - 1, alpha));
             printer.PrintMatrix(m);
         }
     }
