@@ -64,6 +64,53 @@ public:
             AddDocumentEpilogue();
         }
     }
+    void PrintText(const std::string& text) {
+        out << " \\text{" << text << "} \n";
+    }
+    void PrintExpressiondColumn(size_t row_cnt, const std::vector<std::string>& expressions) {
+        out << "\\left(\\begin{array}{l} \n";
+        for (int i = 0; i < row_cnt; ++i) {
+            out << "\t " << expressions[i] << "\\\\";
+            out << "\n";
+        }
+        out << "\\end{array}\\right) \n";
+        ++matricies_in_block;
+        if (matricies_in_block == MAX_MATRICIES_IN_BLOCK) {
+            matricies_in_block = 0;
+            CloseBlock();
+            OpenBlock();
+        }
+    }
+    void PrintLetteredMatrix(size_t row_cnt, size_t column_cnt, char letter) {
+        out << "\\left(\\begin{array}{";
+        for(int i = 0; i < column_cnt; ++i) {
+            out << "l";
+        }
+        out << "} \n";
+        for (int i = 0; i < row_cnt; ++i) {
+            out << "\t";
+            for (int j = 0; j < column_cnt; ++j) {
+                if(column_cnt == 1) {
+                    out << letter << "_{" << i + 1 << "} ";
+                } else {
+                    out << letter << "_{" << i + 1 << ", " << j + 1 << "} ";
+                }
+                if (j + 1 < column_cnt) {
+                    out << " & ";
+                } else {
+                    out << " \\\\ ";
+                }
+            }
+            out << "\n";
+        }
+        out << "\\end{array}\\right) \n";
+        ++matricies_in_block;
+        if (matricies_in_block == MAX_MATRICIES_IN_BLOCK) {
+            matricies_in_block = 0;
+            CloseBlock();
+            OpenBlock();
+        }
+    }
     void PrintMatrix(const Matrix& m, size_t line_ind) {
         out << "\\left(\\begin{array}{";
         for (size_t i = 0; i < m[0].size(); ++i) {
