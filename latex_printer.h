@@ -7,13 +7,32 @@
 #include "fraction.h"
 
 using Matrix = std::vector<std::vector<Fraction<int64_t>>>;
+std::string Romanian(int num) {
+    if(num == 1) {
+        return "\\mathbb{I} ";
+    } else if (num == 2) {
+        return "\\mathbb{II} ";
+    } else if (num == 3) {
+        return "\\mathbb{III} ";
+    } else if (num == 4) {
+        return "\\mathbb{IV} ";
+    } else if (num == 5) {
+        return "\\mathbb{V} ";
+    } else if (num == 6) {
+        return "\\mathbb{VI} ";
+    } else if (num == 7) {
+        return "\\mathbb{VII} ";
+    }else if (num == 8) {
+        return "\\mathbb{VIII} ";
+    }
 
+    throw std::runtime_error("Wow.... you have more than 8 rows in your matrix....");
+}
 std::string TransformationSub(int row1, int row2, const Fraction<int64_t>& alpha) {
-    return "[" + std::to_string(row1 + 1) + "] - " + alpha.ToStr() + "  [" +
-           std::to_string(row2 + 1) + "]";
+    return Romanian(row1 + 1) + " - " + alpha.ToStr() + Romanian(row2 + 1);
 }
 std::string TransformationSwap(int row1, int row2) {
-    return "\\text{swap}([" + std::to_string(row1 + 1) + "], [" + std::to_string(row2 + 1) + "])";
+    return "\\text{swap}(" + Romanian(row1 + 1) + ", " + Romanian(row2 + 1) + ")";
 }
 
 class LatexPinter {
