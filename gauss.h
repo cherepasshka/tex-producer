@@ -156,6 +156,7 @@ std::vector<Column> GetFundametalSolutionSystem(std::ostream& out, const Matrix&
     GetMajorMinorVariables(m, major, minor, row);
     Column basis_vector(minor.size() + major.size());
     std::vector<Column> basis;
+    printer.PrintText("Fundamental solutions system: ");
     for (auto minor_var : minor) {
         for (size_t i = 0; i < basis_vector.size(); ++i) {
             basis_vector[i] = 0;
