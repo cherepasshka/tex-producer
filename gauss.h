@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <cmath>
 #include <iostream>
+#include <string>
 #include <vector>
 
 #include "fraction.h"
@@ -73,22 +74,30 @@ void ToSteppedView(std::ostream& out, Matrix& m, size_t variable_columns, bool i
     }
 }
 void Gaussian(std::ostream& out, const Matrix& input_matrix, const Column& input_b) {
+    LatexPinter printer(out);
     Matrix m = input_matrix;
     for (size_t i = 0; i < input_b.size(); ++i) {
         m[i].push_back(input_b[i]);
     }
     ToSteppedView(out, m, 1, true);
-    
-    LatexPinter printer(out);
-    for(int i = m.size() - 1; i >=0; --i) {
+    Matrix stepped = input_matrix;
+    Column b = input_b;
+    for(int i = 0; i < stepped.size(); ++i) {
+        for(int j = 0; j < stepped[i].size(); ++j) {
+            stepped[i][j] = m[i][j];
+        }
+        b[i] = m[i].back();
+    }
+
+    for (int i = stepped.size() - 1; i >= 0; --i) {
         bool zero_row = true;
-        for(int j = 0; j + 1 < m[i].size(); ++j){
-            if(m[i][j] != 0) {
+        for (int j = 0; j < stepped[i].size(); ++j) {
+            if (stepped[i][j] != 0) {
                 zero_row = false;
                 break;
             }
         }
-        if(zero_row && m[i].back() != 0) {
+        if (zero_row && b[i] != 0) {
             std::cerr << i << " row\n";
             std::cerr << m[i].back() << "\n";
             printer.PrintText("No solution");
@@ -96,27 +105,28 @@ void Gaussian(std::ostream& out, const Matrix& input_matrix, const Column& input
         }
     }
     std::vector<std::string> exprs(m.size());
-    for(int i = 0; i < m.size(); ++i) {
+    for (int i = 0; i < m.size(); ++i) {
         int main_var = m.size();
-        for(int j = 0; j < input_matrix[i].size(); ++j) {
-            if(m[i][j] != 0) {
+        for (int j = 0; j < input_matrix[i].size(); ++j) {
+            if (m[i][j] != 0) {
                 main_var = j;
                 break;
             }
         }
-        if(main_var == m.size()) {
+        if (main_var == m.size()) {
             continue;
         }
         exprs[main_var] = m[i].back().ToStr();
-        for(int j = main_var + 1; j < input_matrix[i].size(); ++j) {
+        for (int j = main_var + 1; j < input_matrix[i].size(); ++j) {
             Fraction<int64_t> alpha = -m[i][j];
-            if(alpha != 0) {
-                exprs[main_var] += " + " + alpha.ToStr() + "\\cdot x_{" + std::to_string(j + 1) + "}" ;
+            if (alpha != 0) {
+                exprs[main_var] +=
+                    " + " + alpha.ToStr() + "\\cdot x_{" + std::to_string(j + 1) + "}";
             }
         }
     }
-    for(int i = 0; i < exprs.size(); ++i) {
-        if(exprs[i].empty()) {
+    for (int i = 0; i < exprs.size(); ++i) {
+        if (exprs[i].empty()) {
             exprs[i] = "x_{" + std::to_string(i + 1) + "}";
         }
     }

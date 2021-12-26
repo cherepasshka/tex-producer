@@ -47,27 +47,36 @@ private:
     int matricies_in_block;
     static const int MAX_MATRICIES_IN_BLOCK = 3;
     std::ostream& out;
-    bool is_full_document;
+    bool is_full_document, is_block_open;
 
 public:
     LatexPinter(std::ostream& o, bool is_full_doc = false) : out(o) {
         matricies_in_block = 0;
+        is_block_open = false;
         is_full_document = is_full_doc;
         if (is_full_document) {
             AddDocumentPrologue();
         }
-        OpenBlock();
+        //OpenBlock();
     }
     ~LatexPinter() {
-        CloseBlock();
+        if(is_block_open) {
+            CloseBlock();
+        }
         if (is_full_document) {
             AddDocumentEpilogue();
         }
     }
     void PrintText(const std::string& text) {
+        if(!is_block_open) {
+            OpenBlock();
+        }
         out << " \\text{" << text << "} \n";
     }
     void PrintExpressiondColumn(size_t row_cnt, const std::vector<std::string>& expressions) {
+        if(!is_block_open) {
+            OpenBlock();
+        }
         out << "\\left(\\begin{array}{l} \n";
         for (int i = 0; i < row_cnt; ++i) {
             out << "\t " << expressions[i] << "\\\\";
@@ -78,19 +87,21 @@ public:
         if (matricies_in_block == MAX_MATRICIES_IN_BLOCK) {
             matricies_in_block = 0;
             CloseBlock();
-            OpenBlock();
         }
     }
     void PrintLetteredMatrix(size_t row_cnt, size_t column_cnt, char letter) {
+        if(!is_block_open) {
+            OpenBlock();
+        }
         out << "\\left(\\begin{array}{";
-        for(int i = 0; i < column_cnt; ++i) {
+        for (int i = 0; i < column_cnt; ++i) {
             out << "l";
         }
         out << "} \n";
         for (int i = 0; i < row_cnt; ++i) {
             out << "\t";
             for (int j = 0; j < column_cnt; ++j) {
-                if(column_cnt == 1) {
+                if (column_cnt == 1) {
                     out << letter << "_{" << i + 1 << "} ";
                 } else {
                     out << letter << "_{" << i + 1 << ", " << j + 1 << "} ";
@@ -108,10 +119,12 @@ public:
         if (matricies_in_block == MAX_MATRICIES_IN_BLOCK) {
             matricies_in_block = 0;
             CloseBlock();
-            OpenBlock();
         }
     }
     void PrintMatrix(const Matrix& m, size_t line_ind) {
+        if(!is_block_open) {
+            OpenBlock();
+        }
         out << "\\left(\\begin{array}{";
         for (size_t i = 0; i < m[0].size(); ++i) {
             if (i == line_ind) {
@@ -137,20 +150,27 @@ public:
         if (matricies_in_block == MAX_MATRICIES_IN_BLOCK) {
             matricies_in_block = 0;
             CloseBlock();
-            OpenBlock();
         }
     }
     void PrintTransformation(const std::string transformation) {
+        if(!is_block_open) {
+            OpenBlock();
+        }
         out << "\\overset{" << transformation << "}{\\longrightarrow} \n";
     }
     void PrintNewLine() {
+        if(!is_block_open) {
+            OpenBlock();
+        }
         out << "\\\\\n";
     }
     void CloseBlock() {
         out << "$$\n";
+        is_block_open = false;
     }
     void OpenBlock() {
         out << "$$\n";
+        is_block_open = true;
     }
     void AddDocumentPrologue() {
         out << "\\documentclass[a4paper,12pt]{article}\n\n";
