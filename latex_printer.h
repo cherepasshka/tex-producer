@@ -45,7 +45,7 @@ std::string TransformationMul(size_t row, const Fraction<int64_t>& alpha) {
 class LatexPinter {
 private:
     int matricies_in_block;
-    static const int MAX_MATRICIES_IN_BLOCK = 3;
+    static const int MAX_MATRICIES_IN_BLOCK = 2;
     std::ostream& out;
     bool is_full_document, is_block_open;
 
@@ -57,10 +57,10 @@ public:
         if (is_full_document) {
             AddDocumentPrologue();
         }
-        //OpenBlock();
+        // OpenBlock();
     }
     ~LatexPinter() {
-        if(is_block_open) {
+        if (is_block_open) {
             CloseBlock();
         }
         if (is_full_document) {
@@ -68,13 +68,13 @@ public:
         }
     }
     void PrintText(const std::string& text) {
-        if(!is_block_open) {
+        if (!is_block_open) {
             OpenBlock();
         }
         out << " \\text{" << text << "} \n";
     }
     void PrintExpressiondColumn(size_t row_cnt, const std::vector<std::string>& expressions) {
-        if(!is_block_open) {
+        if (!is_block_open) {
             OpenBlock();
         }
         out << "\\left(\\begin{array}{l} \n";
@@ -90,7 +90,7 @@ public:
         }
     }
     void PrintLetteredMatrix(size_t row_cnt, size_t column_cnt, char letter) {
-        if(!is_block_open) {
+        if (!is_block_open) {
             OpenBlock();
         }
         out << "\\left(\\begin{array}{";
@@ -122,7 +122,7 @@ public:
         }
     }
     void PrintMatrix(const Matrix& m, size_t line_ind) {
-        if(!is_block_open) {
+        if (!is_block_open) {
             OpenBlock();
         }
         out << "\\left(\\begin{array}{";
@@ -153,13 +153,13 @@ public:
         }
     }
     void PrintTransformation(const std::string transformation) {
-        if(!is_block_open) {
+        if (!is_block_open) {
             OpenBlock();
         }
         out << "\\overset{" << transformation << "}{\\longrightarrow} \n";
     }
     void PrintNewLine() {
-        if(!is_block_open) {
+        if (!is_block_open) {
             OpenBlock();
         }
         out << "\\\\\n";
