@@ -9,76 +9,77 @@
 
 #include "fraction.h"
 #include "latex_printer.h"
+#include "matrix.h"
 
-using Matrix = std::vector<std::vector<Fraction<int64_t>>>;
+// using Matrix = std::vector<std::vector<Fraction<int64_t>>>;
 using Column = std::vector<Fraction<int64_t>>;
+using Rational = Fraction<int64_t>;
 
-void SwapRows(Matrix& m, size_t i1, size_t i2) {
-    for (size_t i = 0; i < m[0].size(); ++i) {
+void SwapRows(Matrix<Rational>& m, size_t i1, size_t i2) {
+    for (size_t i = 0; i < m.ColumnCnt(); ++i) {
         std::swap(m[i1][i], m[i2][i]);
     }
 }
-void MultiplyRow(Matrix& m, size_t j, const Fraction<int64_t>& alpha) {
-    for (size_t i = 0; i < m[0].size(); ++i) {
+void MultiplyRow(Matrix<Rational>& m, size_t j, const Fraction<int64_t>& alpha) {
+    for (size_t i = 0; i < m.ColumnCnt(); ++i) {
         m[j][i] = m[j][i] * alpha;
     }
 }
-void SubstractRows(Matrix& m, size_t i1, size_t i2, const Fraction<int64_t>& alpha) {
-    for (size_t i = 0; i < m[0].size(); ++i) {
+void SubstractRows(Matrix<Rational>& m, size_t i1, size_t i2, const Fraction<int64_t>& alpha) {
+    for (size_t i = 0; i < m.ColumnCnt(); ++i) {
         m[i1][i] = m[i1][i] - alpha * m[i2][i];
     }
 }
-size_t GetNonZeroRow(const Matrix& m, int start, int column) {
-    size_t row = m.size();
-    for (size_t i = start; i < m.size(); ++i) {
+size_t GetNonZeroRow(const Matrix<Rational>& m, int start, int column) {
+    for (size_t i = start; i < m.RowCnt(); ++i) {
         if (m[i][column] != 0) {
-            row = i;
-            break;
+            return i;
         }
     }
-    return row;
+    return m.RowCnt();
 }
-void ToSteppedView(std::ostream& out, Matrix& m, size_t variable_columns, bool improved = false) {
+void ToSteppedView(std::ostream& out, Matrix<Rational>& m, size_t variable_columns,
+                   bool improved = false) {
     LatexPinter printer(out);
-    size_t non_zero_row = m.size(), start_row = 0;
-    size_t matrix_columns = m[0].size() - variable_columns;
+    size_t non_zero_row = m.RowCnt(), start_row = 0;
+    size_t matrix_columns = m.ColumnCnt() - variable_columns;
     Fraction<int64_t> alpha = 0;
 
     printer.PrintMatrix(m, matrix_columns);
     for (size_t i = 0; i < matrix_columns; ++i) {
         non_zero_row = GetNonZeroRow(m, start_row, i);
-        if (non_zero_row == m.size()) {
+        if (non_zero_row == m.RowCnt()) {
             continue;
         }
 
         if (non_zero_row != start_row) {
             SwapRows(m, non_zero_row, start_row);
             printer.PrintTransformation(TransformationSwap(non_zero_row, start_row));
-            printer.PrintMatrix(m, m[0].size() - variable_columns);
+            printer.PrintMatrix(m, m.ColumnCnt() - variable_columns);
         }
         alpha = Fraction<int64_t>(1) / m[start_row][i];
         if (alpha != 1) {
             MultiplyRow(m, start_row, alpha);
             printer.PrintTransformation(TransformationMul(start_row, alpha));
-            printer.PrintMatrix(m, m[0].size() - variable_columns);
+            printer.PrintMatrix(m, m.ColumnCnt() - variable_columns);
         }
-        for (size_t j = improved ? 0 : start_row; j < m.size(); ++j) {
+        for (size_t j = improved ? 0 : start_row; j < m.RowCnt(); ++j) {
             if (m[j][i] == 0 || j == start_row) {
                 continue;
             }
             alpha = m[j][i];  // / m[start_row][i];
             SubstractRows(m, j, start_row, alpha);
             printer.PrintTransformation(TransformationSub(j, start_row, alpha));
-            printer.PrintMatrix(m, m[0].size() - variable_columns);
+            printer.PrintMatrix(m, m.ColumnCnt() - variable_columns);
         }
         ++start_row;
     }
 }
 
-void GetMajorMinorVariables(const Matrix& m, std::set<size_t>& major, std::set<size_t>& minor,
-                            std::vector<size_t>& row) {
-    for (size_t i = 0; i < m.size(); ++i) {
-        for (size_t j = 0; j < m[i].size(); ++j) {
+void GetMajorMinorVariables(const Matrix<Rational>& m, std::set<size_t>& major,
+                            std::set<size_t>& minor, std::vector<size_t>& row) {
+    for (size_t i = 0; i < m.RowCnt(); ++i) {
+        for (size_t j = 0; j < m.ColumnCnt(); ++j) {
             if (m[i][j] != 0) {
                 major.insert(j);
                 row[j] = i;
@@ -86,30 +87,30 @@ void GetMajorMinorVariables(const Matrix& m, std::set<size_t>& major, std::set<s
             }
         }
     }
-    for (size_t i = 0; i < m[0].size(); ++i) {
+    for (size_t i = 0; i < m.ColumnCnt(); ++i) {
         if (major.find(i) == major.end()) {
             minor.insert(i);
         }
     }
 }
-void Gaussian(std::ostream& out, const Matrix& input_matrix, const Column& input_b) {
+void Gaussian(std::ostream& out, const Matrix<Rational>& input_matrix, const Column& input_b) {
     LatexPinter printer(out);
-    Matrix m = input_matrix;
+    Matrix<Rational> m = input_matrix;
     for (size_t i = 0; i < input_b.size(); ++i) {
         m[i].push_back(input_b[i]);
     }
     ToSteppedView(out, m, 1, true);
-    Matrix stepped = input_matrix;
+    Matrix<Rational> stepped = input_matrix;
     Column b = input_b;
-    for (size_t i = 0; i < stepped.size(); ++i) {
-        for (size_t j = 0; j < stepped[i].size(); ++j) {
+    for (size_t i = 0; i < stepped.RowCnt(); ++i) {
+        for (size_t j = 0; j < stepped.ColumnCnt(); ++j) {
             stepped[i][j] = m[i][j];
         }
         b[i] = m[i].back();
     }
-    for (int i = stepped.size() - 1; i >= 0; --i) {
+    for (int i = stepped.RowCnt() - 1; i >= 0; --i) {
         bool is_zero_row = true;
-        for (size_t j = 0; j < stepped[i].size(); ++j) {
+        for (size_t j = 0; j < stepped.ColumnCnt(); ++j) {
             if (stepped[i][j] != 0) {
                 is_zero_row = false;
                 break;
@@ -120,9 +121,9 @@ void Gaussian(std::ostream& out, const Matrix& input_matrix, const Column& input
             return;
         }
     }
-    std::vector<std::string> exprs(stepped[0].size());
+    std::vector<std::string> exprs(stepped.ColumnCnt());
     std::set<size_t> major, minor;
-    std::vector<size_t> row(stepped[0].size(), 0);
+    std::vector<size_t> row(stepped.ColumnCnt(), 0);
     GetMajorMinorVariables(stepped, major, minor, row);
     for (auto i : minor) {
         exprs[i] = "x_{" + std::to_string(i + 1) + "} ";
@@ -142,17 +143,18 @@ void Gaussian(std::ostream& out, const Matrix& input_matrix, const Column& input
     }
 
     printer.PrintText("Answer: ");
-    printer.PrintLetteredMatrix(stepped[0].size(), 1, 'x');
+    printer.PrintLetteredMatrix(stepped.ColumnCnt(), 1, 'x');
     printer.PrintText("=");
     printer.PrintExpressiondColumn(exprs.size(), exprs);
 }
 
-std::vector<Column> GetFundametalSolutionSystem(std::ostream& out, const Matrix& input_matrix) {
+std::vector<Column> GetFundametalSolutionSystem(std::ostream& out,
+                                                const Matrix<Rational>& input_matrix) {
     LatexPinter printer(out);
-    Matrix m = input_matrix;
+    Matrix<Rational> m = input_matrix;
     ToSteppedView(out, m, 0, true);
     std::set<size_t> major, minor;
-    std::vector<size_t> row(m[0].size());
+    std::vector<size_t> row(m.ColumnCnt());
     GetMajorMinorVariables(m, major, minor, row);
     Column basis_vector(minor.size() + major.size());
     std::vector<Column> basis;
@@ -166,7 +168,7 @@ std::vector<Column> GetFundametalSolutionSystem(std::ostream& out, const Matrix&
             basis_vector[main_var] = -m[row[main_var]][minor_var];
         }
         basis.push_back(basis_vector);
-        printer.PrintMatrix({basis_vector}, basis_vector.size() + 1);
+        printer.PrintMatrix(Matrix<Rational>({basis_vector}), basis_vector.size() + 1);
     }
     return basis;
 }

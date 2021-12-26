@@ -5,8 +5,10 @@
 #include <vector>
 
 #include "fraction.h"
+#include "matrix.h"
 
-using Matrix = std::vector<std::vector<Fraction<int64_t>>>;
+using Rational = Fraction<int64_t>;
+
 std::string Romanian(size_t num) {
     if (num == 1) {
         return "\\mathbb{I} ";
@@ -57,7 +59,6 @@ public:
         if (is_full_document) {
             AddDocumentPrologue();
         }
-        // OpenBlock();
     }
     ~LatexPinter() {
         if (is_block_open) {
@@ -121,23 +122,23 @@ public:
             CloseBlock();
         }
     }
-    void PrintMatrix(const Matrix& m, size_t line_ind) {
+    void PrintMatrix(const Matrix<Rational>& m, size_t line_ind) {
         if (!is_block_open) {
             OpenBlock();
         }
         out << "\\left(\\begin{array}{";
-        for (size_t i = 0; i < m[0].size(); ++i) {
+        for (size_t i = 0; i < m.ColumnCnt(); ++i) {
             if (i == line_ind) {
                 out << "|";
             }
             out << "l";
         }
         out << "} \n";
-        for (int i = 0; i < m.size(); ++i) {
+        for (int i = 0; i < m.RowCnt(); ++i) {
             out << "\t";
-            for (int j = 0; j < m[i].size(); ++j) {
+            for (int j = 0; j < m.ColumnCnt(); ++j) {
                 out << m[i][j];
-                if (j + 1 < m[i].size()) {
+                if (j + 1 < m.ColumnCnt()) {
                     out << " & ";
                 } else {
                     out << " \\\\ ";
