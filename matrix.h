@@ -55,4 +55,7 @@ public:
         }
         return res;
     }
+    void AddRow(const std::vector<T>& row) {
+        matrix.push_back(row);
+    }
 };

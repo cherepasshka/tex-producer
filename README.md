@@ -1,4 +1,4 @@
-# Latex printer for matrix or linear envelope operations
+## Latex printer for matrix or linear envelope operations
 #### Content:
 This repository contains the program that produces LaTex code for:
 * Printing matrices
@@ -7,4 +7,8 @@ This repository contains the program that produces LaTex code for:
 * Findind the fundamental solutions system for linear equation Ax = 0
 
 #### Usage:
-===TODO===
+Use from command prompt:
+```
+./main <file>
+```
+Where \<file\> contains information about matrix
