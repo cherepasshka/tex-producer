@@ -8,12 +8,9 @@
 #include <vector>
 
 #include "fraction.h"
+#include "fwd_declare.h"
 #include "latex_printer.h"
 #include "matrix.h"
-
-// using Matrix = std::vector<std::vector<Fraction<int64_t>>>;
-using Column = std::vector<Fraction<int64_t>>;
-using Rational = Fraction<int64_t>;
 
 void SwapRows(Matrix<Rational>& m, size_t i1, size_t i2) {
     for (size_t i = 0; i < m.ColumnCnt(); ++i) {

@@ -5,9 +5,8 @@
 #include <vector>
 
 #include "fraction.h"
+#include "fwd_declare.h"
 #include "matrix.h"
-
-using Rational = Fraction<int64_t>;
 
 std::string Romanian(size_t num) {
     if (num == 1) {

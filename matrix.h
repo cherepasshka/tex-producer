@@ -2,6 +2,8 @@
 #include <cmath>
 #include <vector>
 
+#include "fwd_declare.h"
+
 template <class T>
 class Matrix {
 private:
