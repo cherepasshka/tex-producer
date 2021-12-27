@@ -93,6 +93,14 @@ void GetMajorMinorVariables(const Matrix<Rational>& m, std::set<size_t>& major,
         }
     }
 }
+bool IsZeroRow(const Matrix<Rational>& m, size_t row) {
+    for (size_t i = 0; i < m.ColumnCnt(); ++i) {
+        if (m[row][i] != 0) {
+            return false;
+        }
+    }
+    return true;
+}
 void Gaussian(std::ostream& out, const Matrix<Rational>& input_matrix, const Column& input_b) {
     LatexPinter printer(out);
     Matrix<Rational> m = input_matrix;
@@ -100,23 +108,13 @@ void Gaussian(std::ostream& out, const Matrix<Rational>& input_matrix, const Col
         m[i].push_back(input_b[i]);
     }
     ToSteppedView(out, m, 1, true);
-    Matrix<Rational> stepped = input_matrix;
+    Matrix<Rational> stepped = m.SubMatrix(0, input_matrix.RowCnt(), 0, input_matrix.ColumnCnt());
     Column b = input_b;
     for (size_t i = 0; i < stepped.RowCnt(); ++i) {
-        for (size_t j = 0; j < stepped.ColumnCnt(); ++j) {
-            stepped[i][j] = m[i][j];
-        }
         b[i] = m[i].back();
     }
     for (int i = stepped.RowCnt() - 1; i >= 0; --i) {
-        bool is_zero_row = true;
-        for (size_t j = 0; j < stepped.ColumnCnt(); ++j) {
-            if (stepped[i][j] != 0) {
-                is_zero_row = false;
-                break;
-            }
-        }
-        if (is_zero_row && b[i] != 0) {
+        if (IsZeroRow(stepped, i) && b[i] != 0) {
             printer.PrintText("No solution");
             return;
         }
@@ -128,17 +126,21 @@ void Gaussian(std::ostream& out, const Matrix<Rational>& input_matrix, const Col
     for (auto i : minor) {
         exprs[i] = "x_{" + std::to_string(i + 1) + "} ";
     }
+    Rational coeficient;
     for (auto major_var : major) {
         exprs[major_var] = b[row[major_var]].ToStr();
         for (auto minor_var : minor) {
             if (stepped[row[major_var]][minor_var] == 0) {
                 continue;
             }
-            // if (stepped[row[major_var]][minor_var] > 0) {
-            //     exprs[major_var] += " + ";
-            // }
-            exprs[major_var] += " - " + stepped[row[major_var]][minor_var].ToStr() + "x_{" +
-                                std::to_string(minor_var + 1) + "}";
+            if (stepped[row[major_var]][minor_var] < 0) {
+                exprs[major_var] += " + ";
+                coeficient = -stepped[row[major_var]][minor_var];
+            } else {
+                exprs[major_var] += " - ";
+                coeficient = stepped[row[major_var]][minor_var];
+            }
+            exprs[major_var] += coeficient.ToStr() + "x_{" + std::to_string(minor_var + 1) + "}";
         }
     }
 
@@ -157,7 +159,8 @@ std::vector<Column> GetFundametalSolutionSystem(std::ostream& out,
     std::vector<size_t> row(m.ColumnCnt());
     GetMajorMinorVariables(m, major, minor, row);
     Column basis_vector(minor.size() + major.size());
-    std::vector<Column> basis;
+    std::vector<Column> basis(minor.size());
+    size_t cur_ind = 0;
     printer.PrintText("Fundamental solutions system: ");
     for (auto minor_var : minor) {
         for (size_t i = 0; i < basis_vector.size(); ++i) {
@@ -167,8 +170,8 @@ std::vector<Column> GetFundametalSolutionSystem(std::ostream& out,
         for (auto main_var : major) {
             basis_vector[main_var] = -m[row[main_var]][minor_var];
         }
-        basis.push_back(basis_vector);
-        printer.PrintMatrix(Matrix<Rational>({basis_vector}), basis_vector.size() + 1);
+        basis[cur_ind] = basis_vector;
+        printer.PrintMatrix(Matrix<Rational>({basis_vector}).Transposed(), basis_vector.size() + 1);
     }
     return basis;
 }
