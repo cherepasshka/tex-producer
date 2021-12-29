@@ -3,6 +3,7 @@
 #include <cstdint>
 #include <iomanip>
 
+#include "fwd_declare.h"
 // using FractionType = int64_t ;
 
 template <class FractionType>

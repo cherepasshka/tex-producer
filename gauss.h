@@ -43,6 +43,8 @@ void ToSteppedView(std::ostream& out, Matrix<Rational>& m, size_t variable_colum
     Fraction<int64_t> alpha = 0;
 
     printer.PrintMatrix(m, matrix_columns);
+
+    // return;
     for (size_t i = 0; i < matrix_columns; ++i) {
         non_zero_row = GetNonZeroRow(m, start_row, i);
         if (non_zero_row == m.RowCnt()) {
@@ -98,53 +100,61 @@ bool IsZeroRow(const Matrix<Rational>& m, size_t row) {
     }
     return true;
 }
-void Gaussian(std::ostream& out, const Matrix<Rational>& input_matrix, const Column& input_b) {
+void Gaussian(std::ostream& out, const Matrix<Rational>& input_matrix,
+              const Matrix<Rational>& input_b) {
+    if (input_matrix.RowCnt() != input_b.RowCnt()) {
+        std::cerr << input_b.RowCnt() << " " << input_matrix.RowCnt() << "\n";
+        throw std::runtime_error("Matrices have a different number of rows");
+    }
     LatexPinter printer(out);
     Matrix<Rational> m = input_matrix;
-    for (size_t i = 0; i < input_b.size(); ++i) {
-        m[i].push_back(input_b[i]);
+    for (size_t i = 0; i < input_b.RowCnt(); ++i) {
+        for (size_t j = 0; j < input_b.ColumnCnt(); ++j) {
+            m[i].push_back(input_b[i][j]);
+        }
     }
-    ToSteppedView(out, m, 1, true);
+    ToSteppedView(out, m, input_b.ColumnCnt(), true);
     Matrix<Rational> stepped = m.SubMatrix(0, input_matrix.RowCnt(), 0, input_matrix.ColumnCnt());
-    Column b = input_b;
-    for (size_t i = 0; i < stepped.RowCnt(); ++i) {
-        b[i] = m[i].back();
-    }
+    Matrix<Rational> b = m.SubMatrix(0, m.RowCnt(), input_matrix.ColumnCnt(), m.ColumnCnt());
     for (int i = stepped.RowCnt() - 1; i >= 0; --i) {
-        if (IsZeroRow(stepped, i) && b[i] != 0) {
+        if (IsZeroRow(stepped, i) && !IsZeroRow(b, i)) {
             printer.PrintText("No solution");
             return;
         }
     }
-    std::vector<std::string> exprs(stepped.ColumnCnt());
+    Matrix<std::string> answ(input_matrix.ColumnCnt(), input_b.ColumnCnt());
     std::set<size_t> major, minor;
     std::vector<size_t> row(stepped.ColumnCnt(), 0);
     GetMajorMinorVariables(stepped, major, minor, row);
-    for (auto i : minor) {
-        exprs[i] = "x_{" + std::to_string(i + 1) + "} ";
+    for (size_t j = 0; j < answ.ColumnCnt(); ++j) {
+        for (auto i : minor) {
+            answ[i][j] = "x" + Index(i, j);
+        }
     }
     Rational coeficient;
     for (auto major_var : major) {
-        exprs[major_var] = b[row[major_var]].ToStr();
-        for (auto minor_var : minor) {
-            if (stepped[row[major_var]][minor_var] == 0) {
-                continue;
+        for (size_t i = 0; i < answ.ColumnCnt(); ++i) {
+            answ[major_var][i] = b[row[major_var]][i].ToStr();
+            for (auto minor_var : minor) {
+                if (stepped[row[major_var]][minor_var] == 0) {
+                    continue;
+                }
+                if (stepped[row[major_var]][minor_var] < 0) {
+                    answ[major_var][i] += " + ";
+                    coeficient = -stepped[row[major_var]][minor_var];
+                } else {
+                    answ[major_var][i] += " - ";
+                    coeficient = stepped[row[major_var]][minor_var];
+                }
+                answ[major_var][i] += coeficient.ToStr() + "x" + Index(minor_var, i);
             }
-            if (stepped[row[major_var]][minor_var] < 0) {
-                exprs[major_var] += " + ";
-                coeficient = -stepped[row[major_var]][minor_var];
-            } else {
-                exprs[major_var] += " - ";
-                coeficient = stepped[row[major_var]][minor_var];
-            }
-            exprs[major_var] += coeficient.ToStr() + "x_{" + std::to_string(minor_var + 1) + "}";
         }
     }
 
     printer.PrintText("Answer: ");
-    printer.PrintLetteredMatrix(stepped.ColumnCnt(), 1, 'x');
+    printer.PrintLetteredMatrix(input_matrix.ColumnCnt(), input_b.ColumnCnt(), 'x');
     printer.PrintText("=");
-    printer.PrintExpressiondColumn(exprs.size(), exprs);
+    printer.PrintMatrix(answ, answ.RowCnt());
 }
 
 std::vector<Column> GetFundametalSolutionSystem(std::ostream& out,

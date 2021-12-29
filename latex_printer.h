@@ -43,6 +43,14 @@ std::string TransformationSwap(size_t row1, size_t row2) {
 std::string TransformationMul(size_t row, const Fraction<int64_t>& alpha) {
     return alpha.ToStr() + "\\cdot" + Romanian(row + 1);
 }
+std::string Index(size_t row, size_t column) {
+    // if(row == 1) {
+    //     return "_{" + std::to_string(column + 1) + "}";
+    // } else if(column == 1) {
+    //     return "_{" + std::to_string(row + 1) + "}";
+    // }
+    return "_{" + std::to_string(row + 1) + ", " + std::to_string(column + 1) + "}";
+}
 class LatexPinter {
 private:
     int matricies_in_block;
@@ -101,11 +109,7 @@ public:
         for (int i = 0; i < row_cnt; ++i) {
             out << "\t";
             for (int j = 0; j < column_cnt; ++j) {
-                if (column_cnt == 1) {
-                    out << letter << "_{" << i + 1 << "} ";
-                } else {
-                    out << letter << "_{" << i + 1 << ", " << j + 1 << "} ";
-                }
+                out << letter << Index(i, j);
                 if (j + 1 < column_cnt) {
                     out << " & ";
                 } else {
@@ -121,7 +125,8 @@ public:
             CloseBlock();
         }
     }
-    void PrintMatrix(const Matrix<Rational>& m, size_t line_ind) {
+    template <class T>
+    void PrintMatrix(const Matrix<T>& m, size_t line_ind) {
         if (!is_block_open) {
             OpenBlock();
         }
