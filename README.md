@@ -11,4 +11,4 @@ Use from command prompt:
 ```
 ./main <file>
 ```
-Where \<file\> contains information about matrix
+Where \<file\> contains the information about matrix of coeficients (example of coeficients in matrix: 1.0, 1, 1/1)

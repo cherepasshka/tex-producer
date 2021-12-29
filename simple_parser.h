@@ -8,6 +8,15 @@
 #include "fraction.h"
 #include "fwd_declare.h"
 
+std::string ToLower(const std::string& s) {
+    std::string res = s;
+    for (size_t i = 0; i < s.size(); ++i) {
+        if (isupper(res[i])) {
+            res[i] = res[i] + 'a' - 'A';
+        }
+    }
+    return res;
+}
 Rational FromDecimal(const std::string& integer, const std::string& decimal) {
     return Rational(std::stoi(integer)) +
            Rational(std::stoi(decimal), std::pow(10, decimal.size()));
