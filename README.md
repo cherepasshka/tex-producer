@@ -4,6 +4,7 @@ This repository contains the program that produces LaTex code for:
 * Printing matrices
 * Transforming matrix into stepped matrix form
 * Solving matrix equation Ax = b, where b is column
+* Solving matrix equation AX = B, where B is matrix
 * Findind the fundamental solutions system for linear equation Ax = 0
 
 #### Usage:
